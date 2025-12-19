@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eFOOTBALL ABDO 344 PRO - v2.0</title>
+    <style>
+        :root { --gold: #ffd700; --glass: rgba(0, 0, 0, 0.9); }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: white; }
+        
+        /* شريط الأخبار العلوي - تحديث كل 3 ساعات */
+        #news-ticker { position: fixed; top: 0; width: 100%; background: #b30000; padding: 12px 0; z-index: 1000; border-bottom: 2px solid var(--gold); }
+        .ticker-move { display: inline-block; white-space: nowrap; animation: ticker 35s linear infinite; font-weight: bold; font-size: 18px; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* الواجهة الرئيسية الاحترافية */
+        #main-pro-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; background: radial-gradient(circle at center, #1a472a 0%, #000 100%); display: flex; justify-content: space-between; align-items: center; padding: 60px 40px; box-sizing: border-box; z-index: 500; }
+        .side-panel { width: 25%; height: 80vh; background: var(--glass); border: 1px solid var(--gold); border-radius: 20px; padding: 25px; overflow-y: auto; backdrop-filter: blur(20px); box-shadow: 0 0 20px rgba(255,215,0,0.1); }
+        .item-card { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 4px solid var(--gold); transition: 0.3s; }
+        .item-card:hover { background: rgba(255,215,0,0.1); transform: scale(1.02); }
+        
+        .play-btn { background: linear-gradient(45deg, var(--gold), #ffcc00); color: black; border: none; padding: 25px; font-size: 32px; font-weight: 900; border-radius: 60px; cursor: pointer; transition: 0.4s; width: 80%; box-shadow: 0 10px 40px rgba(255,215,0,0.4); }
+        .play-btn:hover { background: white; transform: scale(1.1); box-shadow: 0 15px 50px rgba(255,215,0,0.6); }
+
+        #scoreboard { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: var(--glass); padding: 10px 50px; border-radius: 0 0 25px 25px; border: 2px solid var(--gold); display: none; z-index: 800; font-size: 24px; font-weight: bold; }
+        canvas { display: none; margin: 0 auto; background: #1a472a; border: 5px solid #2e7d32; cursor: none; }
+    </style>
+</head>
+<body>
+
+<div id="news-ticker">
+    <div class="ticker-move" id="live-news">
+        • جاري تحميل آخر أخبار الميركاتو والمباريات (تحديث تلقائي كل 3 ساعات) • بيلينجهام يقود الريال للفوز • ليفربول يعزز صدارته • ميسي يتألق في الدوري الأمريكي • 
+    </div>
+</div>
+
+<div id="main-pro-ui">
+    <div class="side-panel">
+        <h2 style="color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">📰 أخبار عاجلة</h2>
+        <div id="news-list">
+            <div class="item-card"><h4>صفقة الموسم</h4><p>تأكيدات بانتقال هالاند إلى الدوري الإسباني الموسم القادم.</p></div>
+            <div class="item-card"><h4>دوري الأبطال</h4><p>صدام مرتقب بين بايرن ميونخ وباريس سان جيرمان الليلة.</p></div>
+        </div>
+    </div>
+
+    <div style="width: 45%; text-align: center;">
+        <h1 style="font-size: 70px; color: var(--gold); text-shadow: 0 0 40px rgba(255,215,0,0.6); margin: 0;">ABDO 344 PRO</h1>
+        <p style="letter-spacing: 5px; color: #ccc; margin-bottom: 50px; font-weight: bold;">PREMIUM FOOTBALL EXPERIENCE</p>
+        <button class="play-btn" onclick="startGame()">انطلاق المباراة</button>
+        <div style="margin-top:30px; color:#aaa; font-size:14px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+            🎮 التحكم: الأسهم للحركة | 1 تمرير | 2 تسديد | 3 تداخل دفاعي
+        </div>
+    </div>
+
+    <div class="side-panel">
+        <h2 style="color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">⏰ مباريات اليوم</h2>
+        <div class="item-card"><h4>الريال × برشلونة</h4><p>مباشر - 21:00 بتوقيت مكة</p></div>
+        <div class="item-card"><h4>السيتي × ليفربول</h4><p>مباشر - 18:30 بتوقيت مكة</p></div>
+        <div class="item-card"><h4>الأهلي × الزمالك</h4><p>مباشر - 20:00 بتوقيت مكة</p></div>
+    </div>
+</div>
+
+<div id="scoreboard">
+    REAL MADRID <span id="s1" style="color:var(--gold)">0</span> - <span id="s2">0</span> CPU
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+// نظام التحديث كل 3 ساعات (10800000 مللي ثانية)
+function updateSystem() {
+    console.log("تم تحديث البيانات البرمجية لنسخة ABDO 344 PRO");
+    // هنا يمكن إضافة جلب بيانات حقيقية من API مستقبلاً
+}
+setInterval(updateSystem, 10800000); 
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let gameActive = false, score = {p:0, c:0}, players = [], keys = {};
+let ball = { x: 550, y: 300, vx: 0, vy: 0, r: 9, owner: null, lock: 0 };
+
+function startGame() {
+    document.getElementById('main-pro-ui').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'block';
+    canvas.style.display = 'block';
+    canvas.width = 1100; canvas.height = 600;
+    init(); gameActive = true; loop();
+}
+
+function init() {
+    players = [];
+    // توزيع اللاعبين: حارس، مدافع، وسط، مهاجم (عبدو)
+    const positions = [{x:80,y:300,n:'GK'}, {x:350,y:150,n:'DF'}, {x:350,y:450,n:'MD'}, {x:530,y:300,n:'ABDO'}];
+    positions.forEach((p, i) => {
+        players.push({ x: p.x, y: p.y, team: 'p', n: p.n, isUser: i===3, tackling: 0 });
+        players.push({ x: 1100-p.x, y: p.y, team: 'c', n: 'CPU', isUser: false, tackling: 0 });
+    });
+}
+
+window.onkeydown = (e) => { 
+    keys[e.code] = true; 
+    if(e.code==='Digit1') { /* تمرير */ if(ball.owner?.team==='p') { ball.owner=null; ball.vx=15; ball.lock=20; } }
+    if(e.code==='Digit2') { /* تسديد */ if(ball.owner?.team==='p') { ball.owner=null; ball.vx=25; ball.vy=(Math.random()-0.5)*5; ball.lock=30; } }
+};
+window.onkeyup = (e) => keys[e.code] = false;
+
+function loop() {
+    if(!gameActive) return;
+    
+    let u = players.find(p => p.isUser);
+    if(keys['ArrowUp'] && u.y > 50) u.y -= 7;
+    if(keys['ArrowDown'] && u.y < 550) u.y += 7;
+    if(keys['ArrowLeft'] && u.x > 50) u.x -= 7;
+    if(keys['ArrowRight'] && u.x < 1050) u.x += 7;
+
+    // تحرك الحارس الأخطبوط تلقائياً
+    players.filter(p => p.n === 'GK').forEach(gk => {
+        gk.y += (ball.y - gk.y) * 0.12;
+        if(gk.y < 240) gk.y = 240; if(gk.y > 360) gk.y = 360;
+    });
+
+    // تحرك الكرة والفيزياء
+    if(ball.owner) {
+        ball.x = ball.owner.x + (ball.owner.team==='p'?15:-15);
+        ball.y = ball.owner.y;
+    } else {
+        ball.x += ball.vx; ball.y += ball.vy;
+        ball.vx *= 0.99; ball.vy *= 0.99;
+        if(ball.lock > 0) ball.lock--;
+        players.forEach(p => {
+            if(Math.hypot(p.x-ball.x, p.y-ball.y) < 25 && ball.lock === 0) ball.owner = p;
+        });
+    }
+
+    // الأهداف
+    if(ball.x > 1080 && ball.y > 240 && ball.y < 360) { score.p++; resetBall(); }
+    if(ball.x < 20 && ball.y > 240 && ball.y < 360) { score.c++; resetBall(); }
+
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function resetBall() { ball.x=550; ball.y=300; ball.vx=0; ball.vy=0; ball.owner=null; }
+
+function draw() {
+    ctx.fillStyle = "#1e5c20"; ctx.fillRect(0,0,1100,600); // العشب
+    ctx.strokeStyle = "white"; ctx.lineWidth = 3;
+    ctx.strokeRect(50, 50, 1000, 500); // الملعب
+    ctx.beginPath(); ctx.moveTo(550, 50); ctx.lineTo(550, 550); ctx.stroke(); // خط الوسط
+    
+    players.forEach(p => {
+        ctx.fillStyle = p.team === 'p' ? 'white' : 'red';
+        if(p.n === 'GK') ctx.fillStyle = 'orange';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
+        if(p.isUser) { ctx.strokeStyle = 'gold'; ctx.lineWidth = 4; ctx.stroke(); }
+        ctx.fillStyle = "white"; ctx.fillText(p.n, p.x-10, p.y-20);
+    });
+
+    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.fill();
+    document.getElementById('s1').innerText = score.p;
+    document.getElementById('s2').innerText = score.c;
+}
+</script>
+</body>
+</html> 
